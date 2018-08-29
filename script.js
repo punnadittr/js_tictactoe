@@ -1,3 +1,4 @@
+// The board
 const Gameboard = (() => {
   let board = ['','','','','','','','',''];
   const getBoard = () => board;
@@ -15,11 +16,13 @@ const Gameboard = (() => {
   return {getBoard, putPiece, clearBoard}
 })();
 
-const Player = (name, side) => {
-  const getSide = () => side;
-  const getName = () => name;
+
+// Player object
+const Player = (playername, playerside) => {
+  const side = () => playerside;
+  const name = () => playername;
   const {putPiece} = Gameboard
-  return {getName, getSide, putPiece}
+  return {name, side, putPiece}
 }
 
 // Default player names
@@ -30,12 +33,21 @@ let player2 = Player('player2', 'O');
 const Game = (() => {
   let winCounter = 0;
   let currentPlayer;
+  let winningCondition;
+
   const winningConditions = [
     [0,1,2], [3,4,5], [6,7,8], 
     [0,3,6], [1,4,7], [2,5,8], 
     [0,4,8], [2,4,6]
   ]
-  let winningCondition;
+
+  const start = () => {
+    Game.setCurrentPlayer();
+    DisplayController.addEventListenerToSlots();
+  }
+  const reset = () => {
+    Gameboard.clearBoard();
+  }  
   const gameOver = (piece) => {
     winCounter = 0;
     for (let i = 0; i < winningConditions.length; i++) {
@@ -62,24 +74,17 @@ const Game = (() => {
     return false;
   }
   const getWinningCondition = () => winningCondition;
+  const getCurrentPlayer = () => currentPlayer;
   const setCurrentPlayer = () => {
     currentPlayer = player1;
-  }
-  const getCurrentPlayer = () => currentPlayer;
+  }  
   const switchTurn = () => {
-    if (currentPlayer.getSide() == 'X') {
+    if (currentPlayer.side() == 'X') {
       currentPlayer = player2;
     } else {
       currentPlayer = player1;
     }
     DisplayController.renderPlayerTurn(); 
-  }
-  const reset = () => {
-    Gameboard.clearBoard();
-  }
-  const start = () => {
-    Game.setCurrentPlayer();
-    DisplayController.addEventListenerToSlots();
   }
   return {gameOver, getCurrentPlayer, switchTurn, reset, start, getWinningCondition, setCurrentPlayer}
 })();
@@ -105,10 +110,10 @@ const DisplayController = (() => {
     })    
   }
   const renderPlayerTurn = () => {
-    displayMessage.innerHTML = `${Game.getCurrentPlayer().getName()} (${Game.getCurrentPlayer().getSide()})'s Turn`;
+    displayMessage.innerHTML = `${Game.getCurrentPlayer().name()} (${Game.getCurrentPlayer().side()})'s Turn`;
   }
   const renderGameOver = () => {
-    document.getElementById('winner').innerHTML = `${Game.getCurrentPlayer().getName()} Wins!`;
+    document.getElementById('winner').innerHTML = `${Game.getCurrentPlayer().name()} Wins!`;
   }
   const renderTie = () => {
     document.getElementById('winner').innerHTML = "It's a tie!";
@@ -122,8 +127,8 @@ const DisplayController = (() => {
   const addEventListenerToSlots = () => {    
     for (let i = 0; i < slots.length; i++) {
       slots[i].addEventListener('click', function applyPiece() {      
-        Game.getCurrentPlayer().putPiece(Game.getCurrentPlayer().getSide(), i);
-        Game.gameOver(Game.getCurrentPlayer().getSide());
+        Game.getCurrentPlayer().putPiece(Game.getCurrentPlayer().side(), i);
+        Game.gameOver(Game.getCurrentPlayer().side());
         Game.switchTurn();         
         slots[i].removeEventListener('click', applyPiece);
       });
@@ -134,8 +139,8 @@ const DisplayController = (() => {
     let new_element = old_element.cloneNode(true);
     old_element.parentNode.replaceChild(new_element, old_element);
   }
-  return {render, renderPlayerTurn, renderGameOver, renderTie, addEventListenerToSlots , 
-          removeEventListenerFromSlots, addCover, removeCover, hightlightWinningPiece, resetColor}
+  return { render, renderPlayerTurn, renderGameOver, renderTie, addEventListenerToSlots , 
+          removeEventListenerFromSlots, addCover, removeCover, hightlightWinningPiece, resetColor }
 })();
 
 // General 
